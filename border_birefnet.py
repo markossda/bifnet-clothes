@@ -100,13 +100,20 @@ class BorderBiRefNet:
         
         # Detect items
         print("🔍 Detecting items...")
-        binary_mask = (mask > 100).astype(np.uint8)
+        print(f"📊 Mask stats: min={mask.min()}, max={mask.max()}, mean={mask.mean():.2f}")
+        
+        # Lower threshold for better detection
+        binary_mask = (mask > 50).astype(np.uint8)  # Lower from 100 to 50
+        print(f"🎯 Binary mask has {binary_mask.sum()} foreground pixels")
+        
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(binary_mask, connectivity=8)
+        print(f"🔍 Found {num_labels-1} connected components")
         
         # Filter items
         valid_items = []
         for i in range(1, num_labels):
             area = stats[i, cv2.CC_STAT_AREA]
+            print(f"   Component {i}: {area} pixels")
             if area > min_area:
                 x, y, w, h = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
                 valid_items.append({
