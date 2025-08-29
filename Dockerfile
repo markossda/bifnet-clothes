@@ -23,15 +23,8 @@ COPY . .
 # Create temp directory for API processing
 RUN mkdir -p temp_api
 
-# Pre-download BiRefNet model to avoid startup timeout
-RUN python -c "\
-import os; \
-os.environ['TRANSFORMERS_CACHE'] = '/app/models'; \
-os.environ['HF_HOME'] = '/app/models'; \
-from transformers import AutoModelForImageSegmentation; \
-print('📥 Pre-downloading BiRefNet model...'); \
-model = AutoModelForImageSegmentation.from_pretrained('ZhengPeng7/BiRefNet', trust_remote_code=True, cache_dir='/app/models'); \
-print('✅ BiRefNet model downloaded and cached!')"
+# Try to pre-download BiRefNet model (optional, won't fail build)
+RUN python download_model.py || echo "⚠️ Model download failed, will download on first request"
 
 # Set environment variables
 ENV PYTHONPATH=/app
