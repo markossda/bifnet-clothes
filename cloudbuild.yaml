@@ -10,14 +10,23 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/birefnet-api']
 
-  # Replace PROJECT_ID in service.yaml and deploy
+  # Deploy to Cloud Run with extended configuration
   - name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'bash'
     args:
-    - '-c'
-    - |
-      sed 's/PROJECT_ID/$PROJECT_ID/g' service.yaml > service-final.yaml
-      gcloud run services replace service-final.yaml --region=us-central1
+      - 'run'
+      - 'deploy'
+      - 'birefnet-api' 
+      - '--image=gcr.io/$PROJECT_ID/birefnet-api'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--memory=8Gi'
+      - '--cpu=4'
+      - '--timeout=3600s'
+      - '--max-instances=5'
+      - '--port=8080'
+      - '--set-env-vars=PORT=8080'
+      - '--execution-environment=gen2'
 
 # Build configuration
 options:
