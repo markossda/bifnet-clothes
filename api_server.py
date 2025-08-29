@@ -118,8 +118,8 @@ async def remove_background(
         # Process each item
         for item in results:
             item_data = {
-                "id": item["id"],
-                "area": item["area"],
+                "id": int(item["id"]),  # Convert numpy.int32 to Python int
+                "area": int(item["area"]),  # Convert numpy.int32 to Python int
                 "full_image": f"/download/{session_id}/{Path(item['full_path']).name}",
                 "cropped_image": f"/download/{session_id}/{Path(item['cropped_path']).name}"
             }
@@ -200,8 +200,8 @@ async def remove_background_base64(
                 full_b64 = base64.b64encode(f.read()).decode()
             
             response_items.append({
-                "id": item["id"],
-                "area": item["area"],
+                "id": int(item["id"]),  # Convert numpy.int32 to Python int
+                "area": int(item["area"]),  # Convert numpy.int32 to Python int
                 "cropped_image_base64": cropped_b64,
                 "full_image_base64": full_b64
             })
