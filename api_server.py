@@ -19,6 +19,7 @@ from border_birefnet import BorderBiRefNet
 from PIL import Image
 import base64
 from io import BytesIO
+import time
 
 app = FastAPI(
     title="BiRefNet Gradient Border API",
@@ -333,7 +334,8 @@ async def remove_background_complex(request: dict):
         
         print(f"🎯 Processing: {input_path}")
         
-        # Process with BorderBiRefNet (uses 320x320 optimization automatically)
+        # Get processor and process with BorderBiRefNet (uses 320x320 optimization automatically)
+        processor = get_border_processor()
         results = processor.detect_and_border_items(
             str(input_path),
             str(results_dir),
