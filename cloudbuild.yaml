@@ -10,7 +10,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/birefnet-api']
 
-  # Deploy to Cloud Run with extended configuration
+  # Deploy to Cloud Run with extended startup timeout
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - 'run'
@@ -27,6 +27,8 @@ steps:
       - '--port=8080'
       - '--set-env-vars=PORT=8080'
       - '--execution-environment=gen2'
+      - '--cpu-boost'
+      - '--min-instances=0'
 
 # Build configuration
 options:
