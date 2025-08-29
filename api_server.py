@@ -61,8 +61,9 @@ async def root():
         "message": "🌈 BiRefNet Gradient Border API",
         "version": "1.0.0",
         "endpoints": {
-            "POST /remove-background": "Remove background with gradient borders",
-            "POST /remove-background-base64": "Process base64 image",
+            "POST /remove-background-simple": "🚀 Fast BiRefNet background removal",
+            "POST /remove-background-base64": "Advanced processing with borders",
+            "POST /remove-background": "File upload processing",
             "GET /health": "Health check"
         }
     }
@@ -74,6 +75,68 @@ async def health_check():
         "model": "loaded" if border_processor is not None else "ready_to_load",
         "startup": "fast"
     }
+
+@app.post("/remove-background-simple")
+async def remove_background_simple(request: dict):
+    """
+    🚀 Simple BiRefNet background removal - No item detection, no borders
+    Just pure background removal for speed
+    """
+    
+    if "image_base64" not in request:
+        raise HTTPException(status_code=400, detail="image_base64 required")
+    
+    try:
+        # Get BiRefNet processor (lazy loaded)
+        processor = get_border_processor()
+        
+        # Decode base64 image
+        print("📷 Decoding base64 image...")
+        image_data = base64.b64decode(request["image_base64"])
+        image = Image.open(BytesIO(image_data))
+        
+        # Create temp session
+        session_id = str(uuid.uuid4())
+        session_dir = TEMP_DIR / session_id
+        session_dir.mkdir()
+        
+        try:
+            # Save input image
+            input_path = session_dir / "input.png"
+            image.save(input_path, "PNG")
+            
+            print(f"🚀 Simple background removal processing...")
+            
+            # Just do BiRefNet background removal - NO item detection, NO borders
+            result_image, mask_image = processor.birefnet.remove_background(str(input_path))
+            
+            # Save result
+            output_path = session_dir / "result.png"
+            result_image.save(output_path, "PNG")
+            
+            # Convert to base64
+            with open(output_path, "rb") as f:
+                result_b64 = base64.b64encode(f.read()).decode()
+            
+            # Cleanup
+            shutil.rmtree(session_dir, ignore_errors=True)
+            
+            print(f"✅ Simple background removal complete!")
+            
+            return {
+                "success": True,
+                "processing_type": "simple",
+                "image_base64": result_b64
+            }
+            
+        except Exception as e:
+            # Cleanup on error
+            shutil.rmtree(session_dir, ignore_errors=True)
+            raise e
+            
+    except Exception as e:
+        print(f"❌ Simple processing error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
 
 @app.post("/remove-background")
 async def remove_background(
