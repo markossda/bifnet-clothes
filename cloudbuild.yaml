@@ -1,4 +1,5 @@
 # Google Cloud Build configuration
+# Triggers on: main branch (default) or master branch
 steps:
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
@@ -23,9 +24,17 @@ steps:
       - '--cpu=2'
       - '--timeout=300s'
       - '--max-instances=10'
+      - '--port=8000'
 
+# Build configuration
 options:
   machineType: 'E2_HIGHCPU_8'
   diskSizeGb: 100
+  logging: CLOUD_LOGGING_ONLY
 
 timeout: 1800s
+
+# Substitution variables
+substitutions:
+  _REGION: 'us-central1'
+  _SERVICE_NAME: 'birefnet-api'
