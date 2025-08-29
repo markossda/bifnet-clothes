@@ -33,7 +33,7 @@ class FinalBiRefNet:
         print("✅ BiRefNet loaded with PROPER WEIGHTS!")
         
         # Image preprocessing parameters
-        self.image_size = 1024
+        self.image_size = 320  # Ultra fast - 5 second target
     
     def preprocess_image(self, image_input):
         """Preprocess image for BiRefNet"""
