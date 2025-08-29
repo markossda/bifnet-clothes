@@ -222,7 +222,7 @@ async def remove_background_base64(
     min_area: int = 2000
 ):
     """
-    🌈 Process base64 encoded image with gradient borders
+    🚀 ULTRA FAST Process base64 encoded image with gradient borders - 320x320 resolution
     
     Request body:
     {
@@ -255,9 +255,10 @@ async def remove_background_base64(
         border_width = request.get("border_width", border_width)
         min_area = request.get("min_area", min_area)
         
-        print(f"🖼️ Processing base64 image with {border_type} borders")
+        print(f"🚀 ULTRA FAST Processing base64 image with {border_type} borders at 320x320 resolution")
+        start_time = time.time()
         
-        # Process (lazy loaded)
+        # Process (lazy loaded) - Uses 320x320 optimization automatically
         processor = get_border_processor()
         results = processor.detect_and_border_items(
             str(input_path),
@@ -290,9 +291,12 @@ async def remove_background_base64(
         # Cleanup
         shutil.rmtree(session_dir, ignore_errors=True)
         
-        print(f"✅ Processed {len(results)} items with {border_type} borders")
+        processing_time = time.time() - start_time
+        print(f"🚀 ULTRA FAST: Processed {len(results)} items in {processing_time:.2f} seconds with 320x320 optimization!")
         return {
             "success": True,
+            "processing_time": f"{processing_time:.2f}s",
+            "model": "BiRefNet 320x320 Ultra-Fast",
             "border_type": border_type,
             "border_width": border_width,
             "items_found": len(results),
