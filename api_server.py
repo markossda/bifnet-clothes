@@ -35,14 +35,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize BorderBiRefNet
-print("🚀 Loading BiRefNet model...")
-border_processor = BorderBiRefNet()
-print("✅ BiRefNet loaded successfully!")
+# Global model variable - lazy loading to avoid startup timeout
+border_processor = None
+print("🚀 API server starting - BiRefNet will load on first request")
 
 # Temp directory for processing
 TEMP_DIR = Path("temp_api")
 TEMP_DIR.mkdir(exist_ok=True)
+
+def get_border_processor():
+    """Lazy load BorderBiRefNet on first API request"""
+    global border_processor
+    
+    if border_processor is None:
+        print("🔄 Loading BiRefNet model (first request)...")
+        from border_birefnet import BorderBiRefNet
+        border_processor = BorderBiRefNet()
+        print("✅ BiRefNet model loaded successfully!")
+    
+    return border_processor
 
 @app.get("/")
 async def root():
@@ -58,7 +69,11 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "model": "loaded"}
+    return {
+        "status": "healthy", 
+        "model": "loaded" if border_processor is not None else "ready_to_load",
+        "startup": "fast"
+    }
 
 @app.post("/remove-background")
 async def remove_background(
@@ -93,8 +108,9 @@ async def remove_background(
         
         print(f"🖼️ Processing: {image.filename} with {border_type} borders")
         
-        # Process with BorderBiRefNet
-        results = border_processor.detect_and_border_items(
+        # Process with BorderBiRefNet (lazy loaded)
+        processor = get_border_processor()
+        results = processor.detect_and_border_items(
             str(input_path),
             str(session_dir / "results"),
             border_type,
@@ -177,8 +193,9 @@ async def remove_background_base64(
         
         print(f"🖼️ Processing base64 image with {border_type} borders")
         
-        # Process
-        results = border_processor.detect_and_border_items(
+        # Process (lazy loaded)
+        processor = get_border_processor()
+        results = processor.detect_and_border_items(
             str(input_path),
             str(session_dir / "results"),
             border_type,
