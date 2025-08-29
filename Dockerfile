@@ -23,10 +23,27 @@ COPY . .
 # Create temp directory for API processing
 RUN mkdir -p temp_api
 
+# Pre-download BiRefNet model to avoid startup timeout
+RUN python -c "
+import os
+os.environ['TRANSFORMERS_CACHE'] = '/app/models'
+os.environ['HF_HOME'] = '/app/models'
+from transformers import AutoModelForImageSegmentation
+print('📥 Pre-downloading BiRefNet model...')
+model = AutoModelForImageSegmentation.from_pretrained(
+    'ZhengPeng7/BiRefNet',
+    trust_remote_code=True,
+    cache_dir='/app/models'
+)
+print('✅ BiRefNet model downloaded and cached!')
+"
+
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
+ENV TRANSFORMERS_CACHE=/app/models
+ENV HF_HOME=/app/models
 
 # Expose port (Cloud Run uses PORT env var)
 EXPOSE 8080
