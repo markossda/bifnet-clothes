@@ -302,6 +302,87 @@ async def remove_background_base64(
         print(f"❌ Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
 
+@app.post("/remove-background-complex")
+async def remove_background_complex(request: dict):
+    """
+    🚀 ULTRA FAST Complex Processing - 320x320 resolution for ~13 second processing
+    Multiple item detection with gradient borders at maximum speed
+    
+    Request: {"image": "base64_string"}
+    Response: {"success": true, "items": [...]}
+    """
+    if "image" not in request:
+        raise HTTPException(status_code=400, detail="image field required")
+    
+    try:
+        print("🔥 ULTRA FAST Complex Processing Started!")
+        start_time = time.time()
+        
+        # Create session
+        session_id = str(uuid.uuid4())
+        session_dir = TEMP_DIR / session_id
+        results_dir = session_dir / "results"
+        results_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Decode and save image
+        image_data = base64.b64decode(request["image"])
+        input_path = session_dir / "input.jpg"
+        
+        with open(input_path, "wb") as f:
+            f.write(image_data)
+        
+        print(f"🎯 Processing: {input_path}")
+        
+        # Process with BorderBiRefNet (uses 320x320 optimization automatically)
+        results = processor.detect_and_border_items(
+            str(input_path),
+            str(results_dir),
+            border_type="gradient",
+            border_width=5,
+            min_area=2000
+        )
+        
+        processing_time = time.time() - start_time
+        print(f"⚡ ULTRA FAST processing completed in {processing_time:.2f} seconds!")
+        
+        if not results:
+            raise HTTPException(status_code=400, detail="No clothing items detected")
+        
+        # Convert results to base64 for mobile compatibility
+        response_items = []
+        for item in results:
+            # Read and encode images
+            with open(item["cropped_path"], "rb") as f:
+                cropped_b64 = base64.b64encode(f.read()).decode()
+            
+            with open(item["full_path"], "rb") as f:
+                full_b64 = base64.b64encode(f.read()).decode()
+            
+            response_items.append({
+                "id": int(item["id"]),
+                "area": int(item["area"]),
+                "cropped_image_base64": cropped_b64,
+                "full_image_base64": full_b64
+            })
+        
+        # Cleanup
+        shutil.rmtree(session_dir, ignore_errors=True)
+        
+        print(f"🚀 ULTRA FAST Complex: {len(results)} items in {processing_time:.2f}s!")
+        return {
+            "success": True,
+            "processing_time": f"{processing_time:.2f}s",
+            "model": "BiRefNet 320x320 Ultra-Fast",
+            "items": response_items
+        }
+        
+    except Exception as e:
+        # Cleanup on error
+        if 'session_dir' in locals():
+            shutil.rmtree(session_dir, ignore_errors=True)
+        print(f"❌ ULTRA FAST Complex Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
+
 @app.get("/download/{session_id}/{filename}")
 async def download_file(session_id: str, filename: str):
     """Download processed image file"""
