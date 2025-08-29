@@ -26,13 +26,14 @@ RUN mkdir -p temp_api
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+ENV PORT=8080
 
-# Expose port
-EXPOSE 8000
+# Expose port (Cloud Run uses PORT env var)
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+    CMD python -c "import requests; requests.get('http://localhost:${PORT:-8080}/health')" || exit 1
 
-# Start the API server
-CMD ["python", "-m", "uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start the API server (use PORT env var for Cloud Run compatibility)
+CMD ["sh", "-c", "uvicorn api_server:app --host 0.0.0.0 --port ${PORT:-8080}"]

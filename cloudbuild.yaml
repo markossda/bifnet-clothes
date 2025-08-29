@@ -24,7 +24,8 @@ steps:
       - '--cpu=2'
       - '--timeout=300s'
       - '--max-instances=10'
-      - '--port=8000'
+      - '--port=8080'
+      - '--set-env-vars=PORT=8080'
 
 # Build configuration
 options:
@@ -33,8 +34,3 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 timeout: 1800s
-
-# Substitution variables
-substitutions:
-  _REGION: 'us-central1'
-  _SERVICE_NAME: 'birefnet-api'
