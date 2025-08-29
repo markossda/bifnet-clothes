@@ -20,7 +20,7 @@ steps:
       - '--region=us-central1'
       - '--platform=managed'
       - '--allow-unauthenticated'
-      - '--memory=8Gi'
+      - '--memory=16Gi'
       - '--cpu=4'
       - '--timeout=3600s'
       - '--max-instances=5'
